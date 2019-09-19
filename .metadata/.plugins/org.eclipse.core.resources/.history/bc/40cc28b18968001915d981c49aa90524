@@ -1,0 +1,30 @@
+import java.util.ArrayList;
+import java.util.Collections;
+
+public class AllPaths {
+	private ArrayList<String> myList = new ArrayList<String>();
+	// stores all completed paths
+	
+    public String[] paths(TreeNode root) {
+    	// if (root.left == null && root.right == null) return new String [root.info];
+    	
+    	
+    	myList = new ArrayList<String>();
+        if (root == null) return new String[0];
+        findPaths(root, "");
+        Collections.sort(myList);
+        return myList.toArray(new String[0]);
+    }
+    
+    // path is what came before me in string form
+    public void findPaths(TreeNode tree, String path) {
+    	// append myList in this method
+    	// Base case, at the bottom of the tree
+    	if (tree.left == null && tree.right == null) 
+    		myList.add(path + tree.info);
+    	if (!(tree.left == null)) 
+    		findPaths(tree.left, path + tree.info + "->");
+    	if (!(tree.right == null)) 
+    		findPaths(tree.right, path + tree.info + "->");
+    }
+}

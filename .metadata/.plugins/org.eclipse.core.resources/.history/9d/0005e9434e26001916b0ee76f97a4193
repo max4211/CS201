@@ -1,0 +1,8 @@
+
+public class testFilter {
+	public static void main (String[] args) {
+		String = {"Earthquake in San Francisco",
+				 "Burglary at musuem in Sweden",
+		 "Poverty"}
+	}
+}

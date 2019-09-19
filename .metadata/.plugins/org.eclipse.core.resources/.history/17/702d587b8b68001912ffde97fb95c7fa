@@ -1,0 +1,257 @@
+import java.util.PriorityQueue;
+
+/**
+ * Although this class has a history of several years,
+ * it is starting from a blank-slate, new and clean implementation
+ * as of Fall 2018.
+ * <P>
+ * Changes include relying solely on a tree for header information
+ * and including debug and bits read/written information
+ * 
+ * @author Owen Astrachan
+ */
+
+public class HuffProcessor {
+
+	public static final int BITS_PER_WORD = 8;
+	public static final int BITS_PER_INT = 32;
+	public static final int ALPH_SIZE = (1 << BITS_PER_WORD); 
+	public static final int PSEUDO_EOF = ALPH_SIZE;
+	public static final int HUFF_NUMBER = 0xface8200;
+	public static final int HUFF_TREE  = HUFF_NUMBER | 1;
+
+	private final int myDebugLevel;
+	
+	public static final int DEBUG_HIGH = 4;
+	public static final int DEBUG_LOW = 1;
+	
+	private String[] myEncodings; // I added this for makeCodingsFromTree
+	
+	public HuffProcessor() {
+		this(0);
+	}
+	
+	public HuffProcessor(int debug) {
+		myDebugLevel = debug;
+	}
+
+	/**
+	 * Compresses a file. Process must be reversible and loss-less.
+	 *
+	 * @param in
+	 *            Buffered bit stream of the file to be compressed.
+	 * @param out
+	 *            Buffered bit stream writing to the output file.
+	 */
+	public void compress(BitInputStream in, BitOutputStream out){
+		int[] counts = readForCounts(in);
+		HuffNode root = makeTreeFromCounts(counts);
+		String[] codings = makeCodingsFromTree(root);
+		// Generate the header for all Huffman compression files
+		out.writeBits(BITS_PER_INT, HUFF_TREE);
+		writeHeader(root, out);
+		// Reset bit input stream, then compress to new encoding
+		in.reset(); 
+		writeCompressedBits(codings, in, out);
+		out.close();
+	}
+	
+	/**This method uses the bit input stream to generate an array of ints
+	 * corresponding to the frequency of every eight bit chunk in the file
+	 * being compressed.
+	 * 
+	 * @param in the bit input stream
+	 * @return an array of counts corresponding to each ASCII value
+	 */
+	private int[] readForCounts(BitInputStream in) {
+		int[] counts = new int[ALPH_SIZE + 1]; // Counts int of 257 values
+		
+		// Read bits while the file is still open
+		while (true) {
+			// 8 bits automatically converted to ASCII value
+			int bits = in.readBits(BITS_PER_WORD);
+			if (bits == -1) break;
+			counts[bits] = counts[bits] + 1;
+		}
+		counts[ALPH_SIZE] = 1;
+		
+		return counts;
+	}
+
+	/**From the counts (frequency) array, generate the huffman tree to
+	 * create encodings (see discussion)
+	 * This method leverages the HuffNOde implementation of the comparable interface
+	 * And priority queues to generate the tree (greedy algorithm implies globally optimal)
+	 * 
+	 * @param counts is an int array containing frequencies of each ASCII value in the
+	 * 			input stream
+	 * @return a HuffNode tree that is the globally optimal encodings
+	 */
+	private HuffNode makeTreeFromCounts(int[] counts) {
+		PriorityQueue<HuffNode> pq = new PriorityQueue<>();
+		
+		// Append priority queue for all non zero frequencies
+		for (int i = 0; i < counts.length; i ++) {
+			if (counts[i] > 0) {
+				pq.add(new HuffNode(i, counts[i], null, null));
+			}
+		}
+		
+		while (pq.size() > 1) {
+			HuffNode left = pq.remove();
+			HuffNode right = pq.remove();
+			HuffNode t = new HuffNode(0, left.myWeight + right.myWeight, left, right);
+			pq.add(t);
+		}
+		HuffNode root = pq.remove();	
+		
+		return root;
+	}
+
+	/**From the tree, create encodings for each eight bit character chunk
+	 * This algorithm operates recursively, calling itself each time
+	 * to generate new leaves/children
+	 * 
+	 * @param root the huffman tree used to create encodings
+	 * @return the actual codings for each value
+	 */
+	private String[] makeCodingsFromTree(HuffNode root) {
+		myEncodings = new String[ALPH_SIZE + 1];
+		codingHelper(root, "");
+		return myEncodings;
+	}
+
+	/**Recursively populated method for makeCodingsFromTree method above
+	 * 
+	 * @param root is the huffman tree (assumed globally optimal)
+	 * @param path is the current path traces so far (0s for left, 1s for right)
+	 * @param encodings is the string array of encodings corresponding to ASCII values
+	 * @return the full codings from the tree corresponding to ASCII values
+	 */
+	private void codingHelper(HuffNode root, String path) {
+		// If you are at a leaf, append encodings
+		if (root.myLeft == null && root.myRight == null) myEncodings[root.myValue] = path;
+		// Check if you can go left (0)
+		if (!(root.myLeft == null)) codingHelper(root.myLeft, path + "0");
+		// Check if you can go right (1)
+		if (!(root.myRight == null)) codingHelper(root.myRight, path + "1");
+	}
+
+	/**Use the codings to write a header to the bit output stream
+	 * 
+	 * @param root the huffman tree which has all encodings
+	 * @param out the bit output stream we are writing to 
+	 */
+	private void writeHeader(HuffNode root, BitOutputStream out) {
+		boolean leaf = (root.myLeft == null && root.myRight == null);
+		if (!leaf) {
+			out.writeBits(1, 0); // Check if you are at a leaf
+			if (!(root.myLeft == null)) writeHeader(root.myLeft, out);
+			if (!(root.myRight == null)) writeHeader(root.myRight, out);
+		}
+		else { // Are at a leaf
+			out.writeBits(1, 1);
+			out.writeBits(BITS_PER_WORD + 1, root.myValue);
+		}
+	}
+	
+	/**Using all parameters, write all compressed bits to the output file using
+	 * the codings generate from the huffman tree
+	 * 
+	 * @param codings codings of each ASCII character from huffman tree
+	 * @param in input stream of bits (file to compress) 
+	 * @param out final compressed file according to codings
+	 */
+	private void writeCompressedBits(String[] codings, BitInputStream in, BitOutputStream out) {
+		// Read bits while the file is still open
+		String code;
+		while (true) {
+			// 8 bits automatically converted to ASCII value
+			int bits = in.readBits(BITS_PER_WORD);
+			if (bits == -1) break;
+			code = codings[bits];
+			out.writeBits(code.length(), Integer.parseInt(code, 2));
+		}
+		code = codings[PSEUDO_EOF];
+		out.writeBits(code.length(), Integer.parseInt(code, 2));
+	}
+
+	/**
+	 * Decompresses a file. Output file must be identical bit-by-bit to the
+	 * original.
+	 * As of 4/16/19 this works correctly, however differ method claims compressions are
+	 * wrong; ignore for now but post on Piazza if issue persists
+	 *
+	 * @param in
+	 *            Buffered bit stream of the file to be decompressed.
+	 * @param out
+	 *            Buffered bit stream writing to the output file.
+	 */
+	public void decompress(BitInputStream in, BitOutputStream out){
+
+		int bits = in.readBits(BITS_PER_INT);
+		if (bits != HUFF_TREE) throw new HuffException("illegal header starts with " + bits);
+		}
+		// Implement the following helper methods (from Huffman writeup)
+		HuffNode root = readTree(in);
+		readCompressedBits(root, in, out);
+		out.close();
+	}
+	
+	/**
+	 * Helper method for decompress
+	 * Reads the tree that was generated given
+	 * @param in
+	 * 			Buffered bit stream of the file to be compressed
+	 * @return
+	 * 			HuffNode tree returned from bit inputs
+	 */
+	public HuffNode readTree(BitInputStream in) {
+		// Read a single bit (data type?)
+		int bit = in.readBits(1); 
+		// No more bits to read
+		if (bit == -1) throw new HuffException("illegal bit doesn't exist");
+		if (bit == 0) {
+			HuffNode left = readTree(in);
+			HuffNode right = readTree(in);
+			return new HuffNode(0, 0, left, right);
+		} else { // bits does exist
+			int value = in.readBits(BITS_PER_WORD + 1); // Read nine bits from input
+			return new HuffNode(value, 0, null, null);
+		}
+		
+	}
+	
+	/**This method uses the generated HuffNode tree 'root' to compress input bits
+	 * to the output stream
+	 * 
+	 * @param root the HuffNode tree that specifies the path to all letters
+	 * @param in the bit input stream (currently at the file start)
+	 * @param out is empty output stream that we will write to in this method
+	 */
+	public void readCompressedBits(HuffNode root, BitInputStream in, BitOutputStream out) {
+		HuffNode current = root;
+		while (true) {
+			int bits = in.readBits(1);
+			if (bits == -1) throw new HuffException("bad input, no PSEUDO_EOF");
+			else {
+				// Traversing tree of codings according to 0 (left) or 1 (right)
+				if (bits == 0) current = current.myLeft;
+				else current = current.myRight;
+				
+				// Current is a leaf node
+				// No Children
+				if (current.myLeft == null && current.myRight == null) { 
+					if (current.myValue == PSEUDO_EOF) break;
+					else {
+						// Write 8 bits for current.value;
+						out.writeBits(BITS_PER_WORD, current.myValue);
+						current = root; // Start back after leaf
+					}
+				}
+			}
+				
+			
+		}
+	}
+}

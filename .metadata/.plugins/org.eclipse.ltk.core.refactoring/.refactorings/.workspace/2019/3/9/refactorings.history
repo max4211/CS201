@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Delete resource &apos;markov-part2-efficient&apos;" deleteContents="false" description="Delete resource &apos;markov-part2-efficient&apos;" element1="/markov-part2-efficient" flags="7" id="org.eclipse.ltk.core.refactoring.delete.resources" resources="1" stamp="1551468161366"/>
+</session>

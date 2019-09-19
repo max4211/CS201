@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Move element &apos;Gravity.java&apos; to &apos;APT1&apos;&#x0D;&#x0A;- Original project: &apos;Gravity&apos;&#x0D;&#x0A;- Destination element: &apos;APT1&apos;&#x0D;&#x0A;- Original element: &apos;Gravity.java&apos;&#x0D;&#x0A;- Update references to refactored element" description="Move compilation unit" destination="=APT1" element1="/src&lt;{Gravity.java" files="0" flags="589830" folders="0" id="org.eclipse.jdt.ui.move" policy="org.eclipse.jdt.ui.moveResources" qualified="false" references="true" stamp="1547664688276" units="1" version="1.0"/>
+</session>

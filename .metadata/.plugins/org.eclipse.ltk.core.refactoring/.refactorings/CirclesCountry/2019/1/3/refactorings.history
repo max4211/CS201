@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Move 2 elements to &apos;APT1/src/(default package)&apos;&#x0D;&#x0A;- Original project: &apos;CirclesCountry&apos;&#x0D;&#x0A;- Destination element: &apos;APT1/src/(default package)&apos;&#x0D;&#x0A;- Original elements:&#x0D;&#x0A;     CirclesCountry.java&#x0D;&#x0A;     Totality.java&#x0D;&#x0A;- Update references to refactored element" description="Move compilation units" destination="=APT1/src&lt;" element1="/Totality\/src&lt;{CirclesCountry.java" element2="/Totality\/src&lt;{Totality.java" files="0" flags="589830" folders="0" id="org.eclipse.jdt.ui.move" policy="org.eclipse.jdt.ui.moveResources" qualified="false" references="true" stamp="1547664700289" units="2" version="1.0"/>
+</session>

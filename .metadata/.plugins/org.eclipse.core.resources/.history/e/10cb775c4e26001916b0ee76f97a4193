@@ -1,0 +1,10 @@
+
+public class testFilter {
+	public static void main (String[] args) {
+		String[] test = {"Earthquake in San Francisco",
+				 "Burglary at musuem in Sweden",
+		 "Poverty"};
+		
+		String [] guy = Anonymous.filter(test);
+	}
+}

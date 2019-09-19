@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section name="Workbench">
+	<section name="ExternalProjectImportWizard">
+		<item value="false" key="WizardProjectsImportPage.STORE_NESTED_PROJECTS"/>
+		<item value="false" key="WizardProjectsImportPage.STORE_COPY_PROJECT_ID"/>
+		<item value="false" key="WizardProjectsImportPage.STORE_ARCHIVE_SELECTED"/>
+		<list key="WizardProjectsImportPage.STORE_DIRECTORIES">
+			<item value="C:\Users\Max Smith\Desktop\CS201\huffman-start"/>
+			<item value="C:\Users\Max Smith\Desktop\CS201\percolation"/>
+			<item value="C:\Users\Max Smith\Desktop\CS201\autocomplete"/>
+			<item value="C:\Users\Max Smith\Desktop\CS201\dna-link-spring19"/>
+			<item value="C:\Users\Max Smith\Desktop\CS2012\markov2-efficient-spring19"/>
+			<item value="C:\Users\Max Smith\Desktop\CS201\markov2-efficient-spring19"/>
+			<item value="C:\Users\Max Smith\Desktop\CS201\p1-nbody"/>
+			<item value="C:\Users\Max Smith\Desktop\CS201\markov1-wordgram"/>
+			<item value="C:\Users\Max Smith\Desktop\CS201\diyad201"/>
+			<item value="C:\Users\Max Smith\Desktop\CS_201\p0-person"/>
+		</list>
+		<list key="WizardProjectsImportPage.STORE_ARCHIVES">
+			<item value=""/>
+		</list>
+	</section>
+</section>

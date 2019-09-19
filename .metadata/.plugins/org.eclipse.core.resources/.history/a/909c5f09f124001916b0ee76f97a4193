@@ -1,0 +1,14 @@
+public class Anonymous {
+	public int howMany(String[] headlines, String[] messages) {
+		// fill in code here
+		return 0;
+	}
+	
+	private String[] filter(String [] ) {
+		
+		
+		
+		return " ";
+	}
+	// Helper method to concatenate all characters and change everything to lower case
+}
